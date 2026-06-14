@@ -7,8 +7,8 @@ export interface Feed {
   /** ISO 8601 timestamp of when the feed started. */
   startedAt: string;
   type: FeedType;
-  /** Amount in millilitres (bottle/formula/pumped). Optional for breast/solids. */
-  amountMl?: number;
+  /** Amount in ounces (formula/pumped). Optional for breast. */
+  amountOz?: number;
   /** Duration in minutes (breast/solids). */
   durationMin?: number;
   /** Left / right / both — for breastfeeding. */

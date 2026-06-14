@@ -26,7 +26,7 @@ function saveToStorage(feeds: Feed[]) {
 export default function FeedForm() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [type, setType] = useState<FeedType>("breast");
-  const [amountMl, setAmountMl] = useState("");
+  const [amountOz, setAmountOz] = useState("");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -34,19 +34,24 @@ export default function FeedForm() {
     setFeeds(stored.sort((a, b) => b.startedAt.localeCompare(a.startedAt)));
   }, []);
 
+  function handleTypeChange(next: FeedType) {
+    setType(next);
+    setAmountOz(next === "formula" ? "2" : "");
+  }
+
   function addFeed(e: React.FormEvent) {
     e.preventDefault();
     const feed: Feed = {
       id: crypto.randomUUID(),
       type,
       startedAt: new Date().toISOString(),
-      amountMl: amountMl ? Number(amountMl) : undefined,
+      amountOz: amountOz ? Number(amountOz) : undefined,
       notes: notes || undefined,
     };
     const updated = [feed, ...loadFromStorage()];
     saveToStorage(updated);
     setFeeds(updated);
-    setAmountMl("");
+    setAmountOz(type === "formula" ? "2" : "");
     setNotes("");
   }
 
@@ -54,7 +59,7 @@ export default function FeedForm() {
     <>
       <form className="card" onSubmit={addFeed}>
         <label htmlFor="type">Feed type</label>
-        <select id="type" value={type} onChange={(e) => setType(e.target.value as FeedType)}>
+        <select id="type" value={type} onChange={(e) => handleTypeChange(e.target.value as FeedType)}>
           {TYPES.map(({ value, label }) => (
             <option key={value} value={value}>
               {label}
@@ -64,14 +69,15 @@ export default function FeedForm() {
 
         {type !== "diaper" && (
           <>
-            <label htmlFor="amount">Amount (ml) — optional</label>
+            <label htmlFor="amount">Amount (oz){type !== "formula" ? " — optional" : ""}</label>
             <input
               id="amount"
               type="number"
               min="0"
-              value={amountMl}
-              onChange={(e) => setAmountMl(e.target.value)}
-              placeholder="e.g. 120"
+              step="0.5"
+              value={amountOz}
+              onChange={(e) => setAmountOz(e.target.value)}
+              placeholder="e.g. 2"
             />
           </>
         )}
@@ -92,7 +98,7 @@ export default function FeedForm() {
               <li key={f.id}>
                 <span>
                   {TYPES.find((t) => t.value === f.type)?.label ?? f.type}
-                  {f.amountMl ? ` · ${f.amountMl} ml` : ""}
+                  {f.amountOz ? ` · ${f.amountOz} oz` : ""}
                 </span>
                 <span className="empty">{new Date(f.startedAt).toLocaleString()}</span>
               </li>
