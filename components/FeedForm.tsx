@@ -24,6 +24,20 @@ function saveToStorage(feeds: Feed[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
 }
 
+function dailyAverages(feeds: Feed[]) {
+  if (feeds.length === 0) return null;
+  const earliest = feeds.reduce(
+    (min, f) => (f.startedAt < min ? f.startedAt : min),
+    feeds[0].startedAt,
+  );
+  const days = Math.max(1, Math.ceil((Date.now() - new Date(earliest).getTime()) / 86_400_000));
+  return TYPES.map(({ value, label }) => ({
+    label,
+    count: feeds.filter((f) => f.type === value).length,
+    avg: feeds.filter((f) => f.type === value).length / days,
+  }));
+}
+
 export default function FeedForm() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [type, setType] = useState<FeedType>("breast");
@@ -90,6 +104,23 @@ export default function FeedForm() {
           {type === "wet_diaper" || type === "soiled_diaper" ? "Log diaper" : "Log feed"}
         </button>
       </form>
+
+      {dailyAverages(feeds) && (
+        <div className="card">
+          <strong>Daily averages</strong>
+          <ul className="feed-list">
+            {dailyAverages(feeds)!.map(({ label, count, avg }) => (
+              <li key={label}>
+                <span>{label}</span>
+                <span>
+                  {avg.toFixed(1)}<span className="empty">/day</span>
+                  <span className="empty"> · {count} total</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="card">
         <strong>Recent logs</strong>
