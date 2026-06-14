@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import type { Feed, FeedType } from "@/lib/types";
 
-const TYPES: FeedType[] = ["breast", "bottle", "formula", "solids", "pumped"];
+const TYPES: { value: FeedType; label: string }[] = [
+  { value: "breast", label: "Breast" },
+  { value: "pumped", label: "Pumped" },
+  { value: "formula", label: "Formula" },
+  { value: "diaper", label: "Diaper Change" },
+];
 const STORAGE_KEY = "nibble_feeds";
 
 function loadFromStorage(): Feed[] {
@@ -20,7 +25,7 @@ function saveToStorage(feeds: Feed[]) {
 
 export default function FeedForm() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
-  const [type, setType] = useState<FeedType>("bottle");
+  const [type, setType] = useState<FeedType>("breast");
   const [amountMl, setAmountMl] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -50,39 +55,43 @@ export default function FeedForm() {
       <form className="card" onSubmit={addFeed}>
         <label htmlFor="type">Feed type</label>
         <select id="type" value={type} onChange={(e) => setType(e.target.value as FeedType)}>
-          {TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
+          {TYPES.map(({ value, label }) => (
+            <option key={value} value={value}>
+              {label}
             </option>
           ))}
         </select>
 
-        <label htmlFor="amount">Amount (ml) — optional</label>
-        <input
-          id="amount"
-          type="number"
-          min="0"
-          value={amountMl}
-          onChange={(e) => setAmountMl(e.target.value)}
-          placeholder="e.g. 120"
-        />
+        {type !== "diaper" && (
+          <>
+            <label htmlFor="amount">Amount (ml) — optional</label>
+            <input
+              id="amount"
+              type="number"
+              min="0"
+              value={amountMl}
+              onChange={(e) => setAmountMl(e.target.value)}
+              placeholder="e.g. 120"
+            />
+          </>
+        )}
 
         <label htmlFor="notes">Notes — optional</label>
         <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
 
-        <button type="submit">Log feed</button>
+        <button type="submit">{type === "diaper" ? "Log diaper change" : "Log feed"}</button>
       </form>
 
       <div className="card">
-        <strong>Recent feeds</strong>
+        <strong>Recent logs</strong>
         {feeds.length === 0 ? (
-          <p className="empty">No feeds logged yet.</p>
+          <p className="empty">No entries logged yet.</p>
         ) : (
           <ul className="feed-list">
             {feeds.map((f) => (
               <li key={f.id}>
                 <span>
-                  {f.type}
+                  {TYPES.find((t) => t.value === f.type)?.label ?? f.type}
                   {f.amountMl ? ` · ${f.amountMl} ml` : ""}
                 </span>
                 <span className="empty">{new Date(f.startedAt).toLocaleString()}</span>
