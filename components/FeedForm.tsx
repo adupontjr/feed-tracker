@@ -1,14 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import type { Feed, FeedType } from "@/lib/types";
 
-const TYPES: { value: FeedType; label: string }[] = [
-  { value: "breast", label: "Breast" },
-  { value: "pumped", label: "Pumped" },
-  { value: "formula", label: "Formula" },
-  { value: "wet_diaper", label: "Wet Diaper" },
-  { value: "soiled_diaper", label: "Soiled Diaper" },
+const TYPES: { value: FeedType; label: string; color: string }[] = [
+  { value: "breast",       label: "Breast",       color: "#f472b6" },
+  { value: "pumped",       label: "Pumped",       color: "#a78bfa" },
+  { value: "formula",      label: "Formula",      color: "#60a5fa" },
+  { value: "wet_diaper",   label: "Wet Diaper",   color: "#34d399" },
+  { value: "soiled_diaper",label: "Soiled Diaper",color: "#fb923c" },
 ];
 const STORAGE_KEY = "nibble_feeds";
 
@@ -22,6 +31,28 @@ function loadFromStorage(): Feed[] {
 
 function saveToStorage(feeds: Feed[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
+}
+
+function buildChartData(feeds: Feed[]) {
+  if (feeds.length === 0) return null;
+  const earliest = feeds.reduce(
+    (min, f) => (f.startedAt < min ? f.startedAt : min),
+    feeds[0].startedAt,
+  );
+  const start = new Date(earliest);
+  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const rows: Record<string, Record<string, number>> = {};
+  for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
+    const key = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    rows[key] = Object.fromEntries(TYPES.map((t) => [t.value, 0]));
+  }
+  for (const f of feeds) {
+    const key = new Date(f.startedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    if (rows[key]) rows[key][f.type] = (rows[key][f.type] ?? 0) + 1;
+  }
+  return Object.entries(rows).map(([date, counts]) => ({ date, ...counts }));
 }
 
 function dailyAverages(feeds: Feed[]) {
@@ -119,6 +150,32 @@ export default function FeedForm() {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {buildChartData(feeds) && (
+        <div className="card">
+          <strong>Activity over time</strong>
+          <ResponsiveContainer width="100%" height={240}>
+            <LineChart data={buildChartData(feeds)!} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              {TYPES.map(({ value, label, color }) => (
+                <Line
+                  key={value}
+                  type="monotone"
+                  dataKey={value}
+                  name={label}
+                  stroke={color}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       )}
 
