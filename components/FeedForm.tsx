@@ -4,41 +4,45 @@ import { useEffect, useState } from "react";
 import type { Feed, FeedType } from "@/lib/types";
 
 const TYPES: FeedType[] = ["breast", "bottle", "formula", "solids", "pumped"];
+const STORAGE_KEY = "nibble_feeds";
+
+function loadFromStorage(): Feed[] {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveToStorage(feeds: Feed[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(feeds));
+}
 
 export default function FeedForm() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [type, setType] = useState<FeedType>("bottle");
   const [amountMl, setAmountMl] = useState("");
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function load() {
-    const res = await fetch("/api/feeds");
-    const json = await res.json();
-    setFeeds(json.data ?? []);
-  }
 
   useEffect(() => {
-    load();
+    const stored = loadFromStorage();
+    setFeeds(stored.sort((a, b) => b.startedAt.localeCompare(a.startedAt)));
   }, []);
 
-  async function addFeed(e: React.FormEvent) {
+  function addFeed(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    await fetch("/api/feeds", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type,
-        startedAt: new Date().toISOString(),
-        amountMl: amountMl ? Number(amountMl) : undefined,
-        notes: notes || undefined,
-      }),
-    });
+    const feed: Feed = {
+      id: crypto.randomUUID(),
+      type,
+      startedAt: new Date().toISOString(),
+      amountMl: amountMl ? Number(amountMl) : undefined,
+      notes: notes || undefined,
+    };
+    const updated = [feed, ...loadFromStorage()];
+    saveToStorage(updated);
+    setFeeds(updated);
     setAmountMl("");
     setNotes("");
-    setLoading(false);
-    load();
   }
 
   return (
@@ -66,9 +70,7 @@ export default function FeedForm() {
         <label htmlFor="notes">Notes — optional</label>
         <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging…" : "Log feed"}
-        </button>
+        <button type="submit">Log feed</button>
       </form>
 
       <div className="card">
