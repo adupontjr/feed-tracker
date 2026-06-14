@@ -7,7 +7,8 @@ const TYPES: { value: FeedType; label: string }[] = [
   { value: "breast", label: "Breast" },
   { value: "pumped", label: "Pumped" },
   { value: "formula", label: "Formula" },
-  { value: "diaper", label: "Diaper Change" },
+  { value: "wet_diaper", label: "Wet Diaper" },
+  { value: "soiled_diaper", label: "Soiled Diaper" },
 ];
 const STORAGE_KEY = "nibble_feeds";
 
@@ -67,7 +68,7 @@ export default function FeedForm() {
           ))}
         </select>
 
-        {type !== "diaper" && (
+        {type !== "wet_diaper" && type !== "soiled_diaper" && (
           <>
             <label htmlFor="amount">Amount (oz){type !== "formula" ? " — optional" : ""}</label>
             <input
@@ -85,7 +86,9 @@ export default function FeedForm() {
         <label htmlFor="notes">Notes — optional</label>
         <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
 
-        <button type="submit">{type === "diaper" ? "Log diaper change" : "Log feed"}</button>
+        <button type="submit">
+          {type === "wet_diaper" || type === "soiled_diaper" ? "Log diaper" : "Log feed"}
+        </button>
       </form>
 
       <div className="card">

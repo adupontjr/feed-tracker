@@ -1,6 +1,6 @@
 // Core data model for Nibble feed logs.
 
-export type FeedType = "breast" | "pumped" | "formula" | "diaper";
+export type FeedType = "breast" | "pumped" | "formula" | "wet_diaper" | "soiled_diaper";
 
 export interface Feed {
   id: string;
