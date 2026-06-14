@@ -1,0 +1,108 @@
+:root {
+  --bg: #fff7fb;
+  --card: #ffffff;
+  --ink: #2c2540;
+  --muted: #7a738c;
+  --accent: #f48fb1;
+  --accent-ink: #ad1457;
+  --border: #f0e3ec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 1px 2px rgba(44, 37, 64, 0.04);
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0.75rem 0 0.25rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  background: #fff;
+}
+
+button {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(0.97);
+}
+
+ul.feed-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.feed-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+ul.feed-list li:last-child {
+  border-bottom: none;
+}
+
+.empty {
+  color: var(--muted);
+  font-style: italic;
+}
